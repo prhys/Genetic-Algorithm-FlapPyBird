@@ -3,8 +3,9 @@
 from random import random, randint
 
 class Agent:
-	def __init__(self, length):
+	def __init__(self, length=8):
 		self.movements = []
+		self.fitness = -1
 
 		for i in range(length):
 			self.append_new_value()
@@ -16,11 +17,6 @@ class Agent:
 			self.movements.append(True)
 		else:
 			self.movements.append(False)
-
-	@property
-	def fitness(self):
-		fitness=-1
-		return fitness
 
 	def mutate(self, mutation_rate=0.15):
 		"""The agent changes in a random fashion"""
@@ -63,10 +59,10 @@ class Agent:
 			agents.sort(key=lambda agent: agent.fitness)
 			return agents[0:2]
 
-def generate_population(population=8):
+def generate_population(population=8, length=8):
 	agents=[]
 	for i in range(population):
-		agents.append(Agent())
+		agents.append(Agent(length))
 	return agents
 
 def death(agents):

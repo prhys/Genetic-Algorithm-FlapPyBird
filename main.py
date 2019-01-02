@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 
 from agent import *
-import os
+from flappy import *
+random.seed(5555)
 
-os.chdir(os.getcwd()+'/FlapPyBird')
+agents = generate_population(8,5555)
+agent=agents[0]
 
-
+begin()
+while True:
+    begin2()
+    movementInfo = showWelcomeAnimation()
+    crashInfo = mainGame(movementInfo, agent.movements)
+    agent.fitness = crashInfo['score']
+    showGameOverScreen(crashInfo)
