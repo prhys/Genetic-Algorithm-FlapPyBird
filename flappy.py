@@ -225,13 +225,11 @@ def mainGame(movementInfo, movements):
 
     while True:
         for mov in movements:
-            for event in pygame.event.get():
-                if mov:
-                    if playery > -2 * IMAGES['player'][0].get_height():
-                        playerVelY = playerFlapAcc
-                        playerFlapped = True
-                        SOUNDS['wing'].play()
-                #time.sleep(2)
+            if mov:
+                if playery > -2 * IMAGES['player'][0].get_height():
+                    playerVelY = playerFlapAcc
+                    playerFlapped = True
+                    SOUNDS['wing'].play()
 
         # check for crash here
         crashTest = checkCrash({'x': playerx, 'y': playery, 'index': playerIndex},

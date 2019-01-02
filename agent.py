@@ -10,6 +10,16 @@ class Agent:
 		for i in range(length):
 			self.append_new_value()
 
+	def __repr__(self):
+		return '\nFlappy Bird agent:\n{} movements: {}\nFitness: {}\n'.format(
+			    len(self.movements), self.movements, self.fitness)
+
+	def __add__(self, agent2):
+		index=randint(0, len(self.movements)-1)
+		children = [Agent.frommovements(self.movements[:index]+agent2.movements[index:]),
+		            Agent.frommovements(agent2.movements[:index]+self.movements[index:])]
+		return children
+
 	def append_new_value(self):
 		"""Append a new value to the movements list"""
 		if random() < 0.5:
@@ -43,7 +53,7 @@ class Agent:
 	def crossbred(agents):
 		"""Several agents randomly share characteristics in order to create
 		new agents that might have their good traits"""
-		return agents[0:2]
+		return agents[0] + agents[1]
 
 	@staticmethod
 	def selection(agents, type='best'):
@@ -59,24 +69,17 @@ class Agent:
 			agents.sort(key=lambda agent: agent.fitness)
 			return agents[0:2]
 
+	@classmethod
+	def frommovements(cls, movements):
+		agent=cls(0)
+		agent.movements = movements
+		return agent
+
 def generate_population(population=8, length=8):
 	agents=[]
 	for i in range(population):
 		agents.append(Agent(length))
 	return agents
 
-def death(agents):
-	worst = Agent.selection(agents, type='worst')
-	for i in worst:
-		agents.remove(i)
-	return agents
-
-def birth(agents):
-	best = Agent.selection(agents, type='best')
-	for i in best:
-		agents.append(i)
-	return agents
-
-
 if __name__=='__main__':
-	print(Agent(8).movements)
+	print(generate_population())
