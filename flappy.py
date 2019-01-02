@@ -154,11 +154,11 @@ def showWelcomeAnimation():
     playerShmVals = {'val': 0, 'dir': 1}
 
     while True:
-        for event in pygame.event.get():
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+        for event in [True]:
+            # if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+            #     pygame.quit()
+            #     sys.exit()
+            if True:
                 # make first flap sound and return values for mainGame
                 SOUNDS['wing'].play()
                 return {
@@ -186,6 +186,7 @@ def showWelcomeAnimation():
 
 
 def mainGame(movementInfo, movements):
+    random.seed(5555)
     score = playerIndex = loopIter = 0
     playerIndexGen = movementInfo['playerIndexGen']
     playerx, playery = int(SCREENWIDTH * 0.2), movementInfo['playery']
@@ -231,88 +232,89 @@ def mainGame(movementInfo, movements):
                     playerFlapped = True
                     SOUNDS['wing'].play()
 
-        # check for crash here
-        crashTest = checkCrash({'x': playerx, 'y': playery, 'index': playerIndex},
+            # check for crash here
+            crashTest = checkCrash({'x': playerx, 'y': playery, 'index': playerIndex},
                                upperPipes, lowerPipes)
-        if crashTest[0]:
-            return {
-                'y': playery,
-                'groundCrash': crashTest[1],
-                'basex': basex,
-                'upperPipes': upperPipes,
-                'lowerPipes': lowerPipes,
-                'score': score,
-                'playerVelY': playerVelY,
-                'playerRot': playerRot
-            }
+            if crashTest[0]:
+                return {
+                    'y': playery,
+                    'groundCrash': crashTest[1],
+                    'basex': basex,
+                    'upperPipes': upperPipes,
+                    'lowerPipes': lowerPipes,
+                    'score': score,
+                    'playerVelY': playerVelY,
+                    'playerRot': playerRot
+                }
 
-        # check for score
-        playerMidPos = playerx + IMAGES['player'][0].get_width() / 2
-        for pipe in upperPipes:
-            pipeMidPos = pipe['x'] + IMAGES['pipe'][0].get_width() / 2
-            if pipeMidPos <= playerMidPos < pipeMidPos + 4:
-                score += 1
-                SOUNDS['point'].play()
+            # check for score
+            playerMidPos = playerx + IMAGES['player'][0].get_width() / 2
+            for pipe in upperPipes:
+                pipeMidPos = pipe['x'] + IMAGES['pipe'][0].get_width() / 2
+                if pipeMidPos <= playerMidPos < pipeMidPos + 4:
+                    score += 1
+                    SOUNDS['point'].play()
 
-        # playerIndex basex change
-        if (loopIter + 1) % 3 == 0:
-            playerIndex = next(playerIndexGen)
-        loopIter = (loopIter + 1) % 30
-        basex = -((-basex + 100) % baseShift)
+            # playerIndex basex change
+            if (loopIter + 1) % 3 == 0:
+                playerIndex = next(playerIndexGen)
+            loopIter = (loopIter + 1) % 30
+            basex = -((-basex + 100) % baseShift)
 
-        # rotate the player
-        if playerRot > -90:
-            playerRot -= playerVelRot
+            # rotate the player
+            if playerRot > -90:
+                playerRot -= playerVelRot
 
-        # player's movement
-        if playerVelY < playerMaxVelY and not playerFlapped:
-            playerVelY += playerAccY
-        if playerFlapped:
-            playerFlapped = False
+            # player's movement
+            if playerVelY < playerMaxVelY and not playerFlapped:
+                playerVelY += playerAccY
+            if playerFlapped:
+                playerFlapped = False
 
-            # more rotation to cover the threshold (calculated in visible rotation)
-            playerRot = 45
+                # more rotation to cover the threshold (calculated in visible rotation)
+                playerRot = 45
 
-        playerHeight = IMAGES['player'][playerIndex].get_height()
-        playery += min(playerVelY, BASEY - playery - playerHeight)
+            playerHeight = IMAGES['player'][playerIndex].get_height()
+            playery += min(playerVelY, BASEY - playery - playerHeight)
 
-        # move pipes to left
-        for uPipe, lPipe in zip(upperPipes, lowerPipes):
-            uPipe['x'] += pipeVelX
-            lPipe['x'] += pipeVelX
+            # move pipes to left
+            for uPipe, lPipe in zip(upperPipes, lowerPipes):
+                uPipe['x'] += pipeVelX
+                lPipe['x'] += pipeVelX
 
-        # add new pipe when first pipe is about to touch left of screen
-        if 0 < upperPipes[0]['x'] < 5:
-            newPipe = getRandomPipe()
-            upperPipes.append(newPipe[0])
-            lowerPipes.append(newPipe[1])
+            # add new pipe when first pipe is about to touch left of screen
+            if 0 < upperPipes[0]['x'] < 5:
+                newPipe = getRandomPipe()
+                upperPipes.append(newPipe[0])
+                lowerPipes.append(newPipe[1])
 
-        # remove first pipe if its out of the screen
-        if upperPipes[0]['x'] < -IMAGES['pipe'][0].get_width():
-            upperPipes.pop(0)
-            lowerPipes.pop(0)
+            # remove first pipe if its out of the screen
+            if upperPipes[0]['x'] < -IMAGES['pipe'][0].get_width():
+                upperPipes.pop(0)
+                lowerPipes.pop(0)
 
-        # draw sprites
-        SCREEN.blit(IMAGES['background'], (0,0))
+            # draw sprites
+            SCREEN.blit(IMAGES['background'], (0,0))
 
-        for uPipe, lPipe in zip(upperPipes, lowerPipes):
-            SCREEN.blit(IMAGES['pipe'][0], (uPipe['x'], uPipe['y']))
-            SCREEN.blit(IMAGES['pipe'][1], (lPipe['x'], lPipe['y']))
+            for uPipe, lPipe in zip(upperPipes, lowerPipes):
+                SCREEN.blit(IMAGES['pipe'][0], (uPipe['x'], uPipe['y']))
+                SCREEN.blit(IMAGES['pipe'][1], (lPipe['x'], lPipe['y']))
 
-        SCREEN.blit(IMAGES['base'], (basex, BASEY))
-        # print score so player overlaps the score
-        showScore(score)
+            SCREEN.blit(IMAGES['base'], (basex, BASEY))
+            # print score so player overlaps the score
+            showScore(score)
 
-        # Player rotation has a threshold
-        visibleRot = playerRotThr
-        if playerRot <= playerRotThr:
-            visibleRot = playerRot
-        
-        playerSurface = pygame.transform.rotate(IMAGES['player'][playerIndex], visibleRot)
-        SCREEN.blit(playerSurface, (playerx, playery))
+            # Player rotation has a threshold
+            visibleRot = playerRotThr
+            if playerRot <= playerRotThr:
+                visibleRot = playerRot
 
-        pygame.display.update()
-        FPSCLOCK.tick(FPS)
+            playerSurface = pygame.transform.rotate(IMAGES['player'][playerIndex], visibleRot)
+            SCREEN.blit(playerSurface, (playerx, playery))
+
+            pygame.display.update()
+            FPSCLOCK.tick(FPS)
+        movements=[False, False, False]
 
 
 def showGameOverScreen(crashInfo):
@@ -336,11 +338,11 @@ def showGameOverScreen(crashInfo):
         SOUNDS['die'].play()
 
     while True:
-        for event in pygame.event.get():
-            if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN and (event.key == K_SPACE or event.key == K_UP):
+        for event in [True]:
+            # if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
+            #     pygame.quit()
+            #     sys.exit()
+            if True:
                 if playery + playerHeight >= BASEY - 1:
                     return
 
@@ -479,5 +481,5 @@ if __name__ == '__main__':
     while True:
         begin2()
         movementInfo = showWelcomeAnimation()
-        crashInfo = mainGame(movementInfo, [1,1,1,0,0,1,0,1])
+        crashInfo = mainGame(movementInfo, [1,1,1,0,0,1,0,1,0,1,0,1,0,1,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1])
         showGameOverScreen(crashInfo)

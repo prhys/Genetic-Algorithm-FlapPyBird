@@ -2,26 +2,30 @@
 
 from agent import *
 from flappy import *
-random.seed(5555)
 
-agents = generate_population(8)
+agents = generate_population(16, 200)
 agent=agents[0]
 generations=1000
 
 def evaluate(agents):
     for agent in agents:
-        agent.mutate()
+        if Agent.selection(agents)[0].fitness<100:
+        	agent.mutate(mutation_rate=0.75)
+        else:
+        	agent.mutate()
 
         begin2()
         movementInfo = showWelcomeAnimation()
+        t1=time.time()
         crashInfo = mainGame(movementInfo, agent.movements)
-        
-        agent.fitness = crashInfo['score']
+        t2=time.time()
+        agent.fitness = (t2-t1)+100*crashInfo['score']
         showGameOverScreen(crashInfo)
         print('fitness', agent.fitness)
 
 def replace(agents):
     best = Agent.selection(agents, 'best')
+    print('best fitness', best[0].fitness)
     children = Agent.crossbred(best)
     worst = Agent.selection(agents, 'worst')
     for i in worst:
@@ -34,7 +38,8 @@ def main():
     for i in range(generations):
         evaluate(agents)
         replace(agents)
-        print('new generation')
+        print('generation ', i+1)
+        print(agents)
 
 if __name__=='__main__':
 	main()

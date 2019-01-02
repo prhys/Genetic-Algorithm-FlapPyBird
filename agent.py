@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 from random import random, randint
+import time
 
 class Agent:
 	def __init__(self, length=8):
 		self.movements = []
-		self.fitness = -1
+		self.fitness=-1
 
 		for i in range(length):
 			self.append_new_value()
@@ -20,15 +21,20 @@ class Agent:
 		            Agent.frommovements(agent2.movements[:index]+self.movements[index:])]
 		return children
 
-	def append_new_value(self):
+	# @property
+	# def fitness(self):
+	# 	t1=time.time()
+
+
+	def append_new_value(self, jump_probab=0.07):
 		"""Append a new value to the movements list"""
-		if random() < 0.5:
+		if random() < jump_probab:
 			#The appended value will be True or False depending on random()
 			self.movements.append(True)
 		else:
 			self.movements.append(False)
 
-	def mutate(self, mutation_rate=0.15):
+	def mutate(self, mutation_rate=0.35):
 		"""The agent changes in a random fashion"""
 		if random() <= mutation_rate:
 			#Only proceed if random() is lower than the mutation rate
