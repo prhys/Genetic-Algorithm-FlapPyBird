@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-from random import random, randint
+from random import random, randint, uniform, choice
 import time
 
 class Agent:
+	jump_probab=0.07
 	def __init__(self, length=8):
 		self.movements = []
-		self.fitness=-1
+		self.fitness=uniform(0,20)
 
 		for i in range(length):
 			self.append_new_value()
@@ -26,16 +27,19 @@ class Agent:
 	# 	t1=time.time()
 
 
-	def append_new_value(self, jump_probab=0.07):
+	def append_new_value(self):
 		"""Append a new value to the movements list"""
-		if random() < jump_probab:
+		if random() < Agent.jump_probab:
 			#The appended value will be True or False depending on random()
 			self.movements.append(True)
 		else:
 			self.movements.append(False)
 
-	def mutate(self, mutation_rate=0.35):
+	def mutate(self, mutation_rate=None):
 		"""The agent changes in a random fashion"""
+		if mutation_rate == None:
+			mutation_rate = 1/32*len(self.movements)
+
 		if random() <= mutation_rate:
 			#Only proceed if random() is lower than the mutation rate
 			if random() < 0.5:
@@ -43,17 +47,10 @@ class Agent:
 			else:
 				#We didn't append anything to the list, so we will change randomly
 				#one value of the list
-				try:
-					#randint() will raise an error if len(self.movements)==0
-					#In this case, there's nothing to change.
-					position=randint(0, len(self.movements)-1)
-				except ValueError:
-					pass
-				else:
-					if self.movements[position]:
-						self.movements[position]=False
-					else:
-						self.movements[position]=True
+				trues = [i for i, value in enumerate(self.movements) if value ==True]
+				falses = [i for i, value in enumerate(self.movements) if value ==False]
+				self.movements[choice(trues)] = False
+				self.movements[choice(falses)] = True
 
 	@staticmethod
 	def crossbred(agents):
@@ -63,17 +60,38 @@ class Agent:
 
 	@staticmethod
 	def selection(agents, type='best'):
-		"""For selection of the best agents, choose best.
+		"""For a random weighted selection of the best agents, choose best.
 		Otherwise, choose worst"""
 		assert type.lower()=='best' or type.lower()=='worst', "type must be 'best' or 'worst'"
 
+		total=0
+		chosen=[]
+		def pie_selection(func):
+			while True:
+				target=uniform(0,total)
+				position=0
+				for i in agents:
+					position+=func(i)
+					if target<=position:
+						if i not in chosen:
+							chosen.append(i)
+						break
+				else:
+					raise RuntimeError('selection pie is wrongly coded')
+				if len(chosen)==2:
+					break
 		if type.lower()=='best':
-			agents.sort(key=lambda agent: agent.fitness, reverse=True)
-			return agents[0:2]
-		
+			for i in agents:
+				total+=i.fitness
+			pie_selection(lambda agent: agent.fitness)
 		else:
-			agents.sort(key=lambda agent: agent.fitness)
-			return agents[0:2]
+			for i in agents:
+				total+=1/i.fitness
+			pie_selection(lambda agent: 1/agent.fitness)
+		for i in agents:
+			print(i.fitness)
+		print('chosen:',chosen[0].fitness, chosen[1].fitness)
+		return chosen
 
 	@classmethod
 	def frommovements(cls, movements):
@@ -88,4 +106,8 @@ def generate_population(population=8, length=8):
 	return agents
 
 if __name__=='__main__':
-	print(generate_population())
+	pop=generate_population()
+	for i in pop:
+		print('population', i.fitness)
+	for i in Agent.selection(pop, 'worst'):
+		print('best', i.fitness)
